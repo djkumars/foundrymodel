@@ -1,0 +1,18 @@
+:host { display: block; min-height: 100dvh; background: #fcfbf8; color: #17243b; }
+.admin { max-width: 760px; margin: auto; padding: 28px 24px; }
+.admin__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 48px; }
+a { color: #274c75; text-decoration: none; }
+.admin__card { padding: clamp(24px, 5vw, 42px); background: #fff; border: 1px solid #eeede8; border-radius: 16px; box-shadow: 0 12px 30px #263e5814; }
+.eyebrow { color: #738097; font-size: 11px; font-weight: 750; letter-spacing: .14em; }
+h1 { margin: 12px 0; font-size: 32px; letter-spacing: -.04em; }
+p { color: #68778c; line-height: 1.6; }
+form { display: flex; flex-direction: column; align-items: flex-start; margin-top: 30px; }
+label { color: #30425a; font-weight: 650; }
+.checkbox { display: flex; gap: 10px; align-items: center; margin-bottom: 25px; }
+.hint { margin: 7px 0 12px; font-size: 13px; }
+input[type="number"] { box-sizing: border-box; width: 140px; padding: 10px; border: 1px solid #ccd5e1; border-radius: 8px; font: inherit; }
+button { padding: 11px 16px; color: #fff; background: #274c75; border: 0; border-radius: 8px; font: inherit; cursor: pointer; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.secondary { color: #274c75; background: #edf2f7; }
+.error { color: #9c2f35; }
+.success { color: #28714e; }

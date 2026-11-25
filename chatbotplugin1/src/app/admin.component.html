@@ -1,0 +1,32 @@
+<main class="admin">
+  <header class="admin__header">
+    <a href="/">← Back to website</a>
+    @if (auth.signedIn()) {
+      <button type="button" class="secondary" (click)="signOut()" [disabled]="busy()">Sign out</button>
+    }
+  </header>
+  <section class="admin__card">
+    <span class="eyebrow">ADMINISTRATION</span>
+    <h1>Model settings</h1>
+    <p>Configure how the assistant responds across all conversations.</p>
+    @if (!auth.signedIn()) {
+      <p>Sign in with an authorized administrator account to continue.</p>
+      <button type="button" (click)="signIn()" [disabled]="!auth.ready() || busy()">Sign in</button>
+    } @else if (loaded()) {
+      <form (ngSubmit)="save()">
+        <label class="checkbox"><input type="checkbox" name="useDefault" [(ngModel)]="useDefault"> Use model default</label>
+        <label for="temperature">Temperature</label>
+        <p class="hint">Lower values make responses more focused; higher values make them more varied. Supported range: 0 to 2.</p>
+        <input id="temperature" name="temperature" type="number" min="0" max="2" step="any"
+          [(ngModel)]="temperature" [disabled]="useDefault || busy()" [required]="!useDefault">
+        <p class="hint">Not all deployments support temperature or the full range. Check your model's documentation.</p>
+        <button type="submit" [disabled]="busy()">Save settings</button>
+      </form>
+    } @else if (!busy()) {
+      <button type="button" class="secondary" (click)="load()">Try again</button>
+    }
+    @if (busy()) { <p role="status">Working…</p> }
+    @if (auth.error() || error()) { <p class="error" role="alert">{{ auth.error() || error() }}</p> }
+    @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+  </section>
+</main>

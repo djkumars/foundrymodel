@@ -1,0 +1,207 @@
+@if (isAdminPage) {
+<app-admin />
+} @else if (isChatPage) {
+<section class="chat" aria-label="Chat with our AI assistant">
+  <header class="chat__header">
+    <div class="brand">
+      <div class="brand__avatar" aria-hidden="true">✦</div>
+      <div>
+        <h1>{{ title() }}</h1>
+        <p><span class="status-dot"></span> Here to help</p>
+      </div>
+    </div>
+    <div class="chat__actions">
+      @if (auth.signedIn()) {
+        <button type="button" (click)="signOut()" [disabled]="authBusy() || isLoading() || isHistoryLoading() || searchLoading()">Sign out</button>
+      }
+      <button class="icon-button" type="button" aria-label="Close chat" (click)="closeChat()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+  </header>
+
+  @if (!auth.signedIn()) {
+    <div class="signin">
+      <p>Sign in to save and search your conversations across devices.</p>
+      @if (auth.error() || error()) {
+        <p class="error" role="alert">{{ auth.error() || error() }}</p>
+      }
+      <button type="button" (click)="signIn()" [disabled]="!auth.ready() || authBusy()">Sign in</button>
+    </div>
+  } @else {
+  <section class="history" aria-label="Conversation history">
+    <form class="history__search" (ngSubmit)="searchConversations()">
+      <label class="sr-only" for="history-search">Search conversations</label>
+      <input id="history-search" name="search" [(ngModel)]="searchDraft" maxlength="200" placeholder="Search conversations">
+      <button type="submit" [disabled]="searchLoading()">Search</button>
+      <button type="button" (click)="startNewConversation()" [disabled]="isLoading() || isHistoryLoading()">New chat</button>
+    </form>
+    <div class="history__results">
+      @for (conversation of conversations(); track $index) {
+        <button type="button" (click)="loadConversation(conversation.conversationId)"
+          [disabled]="isLoading() || isHistoryLoading()">{{ conversation.preview }}</button>
+      }
+      @if (!searchLoading() && conversations().length === 0) {
+        <span>No conversations found.</span>
+      }
+      @if (continuationToken()) {
+        <button type="button" (click)="searchConversations(true)" [disabled]="searchLoading()">Load more</button>
+      }
+    </div>
+  </section>
+  <div class="messages" #messageList aria-live="polite" aria-relevant="additions text">
+    @if (historyContinuationToken()) {
+      <button type="button" (click)="loadEarlierMessages()" [disabled]="isHistoryLoading() || isLoading()">Load earlier messages</button>
+    }
+    <div class="intro">
+      <span class="intro__sparkle" aria-hidden="true">✦</span>
+      <h2>How can I help?</h2>
+      <p>Ask me anything and I’ll do my best to help.</p>
+    </div>
+
+    @for (message of messages(); track message.id) {
+      <article class="message" [class.message--user]="message.role === 'user'">
+        @if (message.role === 'assistant') {
+          <span class="message__avatar" aria-hidden="true">✦</span>
+        }
+        <div class="message__content">
+          <p class="message__bubble">{{ message.content }}</p>
+          @if (message.role === 'assistant' && message.tokenUsage !== undefined) {
+            <p class="message__usage">
+              @if (message.tokenUsage; as usage) {
+                Tokens: {{ usage.promptTokens }} input · {{ usage.completionTokens }} output · {{ usage.totalTokens }} total
+              } @else {
+                Token usage unavailable
+              }
+            </p>
+          }
+        </div>
+      </article>
+    }
+
+    @if (isLoading() && !isStreaming()) {
+      <div class="message" role="status" aria-label="Assistant is typing">
+        <span class="message__avatar" aria-hidden="true">✦</span>
+        <div class="message__bubble typing"><span></span><span></span><span></span></div>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="error" role="alert">
+        <p>{{ error() }}</p>
+        <button type="button" (click)="startNewConversation()" [disabled]="isLoading() || isHistoryLoading()">Start a new conversation</button>
+      </div>
+    }
+  </div>
+
+  <form class="composer" (ngSubmit)="sendMessage()">
+    <label class="sr-only" for="chat-message">Your message</label>
+    <textarea
+      id="chat-message"
+      name="message"
+      [(ngModel)]="draft"
+      placeholder="Write a message..."
+      rows="1"
+      maxlength="4000"
+      [disabled]="isLoading() || isHistoryLoading()"
+      (keydown)="onInputKeydown($event)"
+    ></textarea>
+    <button
+      class="send-button"
+      type="submit"
+      aria-label="Send message"
+      [disabled]="isLoading() || isHistoryLoading() || !draft.trim()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" /></svg>
+    </button>
+  </form>
+  }
+  <footer class="chat__footer">Powered by AI</footer>
+</section>
+} @else {
+<main class="site">
+  <header class="site-header">
+    <a class="site-brand" href="/" aria-label="Northstar home">
+      <span class="site-brand__mark" aria-hidden="true">✦</span>
+      <span>northstar<span class="site-brand__accent">.</span></span>
+    </a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="#features">Features</a>
+      <a href="#about">About</a>
+      <a class="site-nav__cta" href="#get-started">Get started <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <section class="hero" id="about">
+    <div class="hero__copy">
+      <span class="eyebrow"><span class="eyebrow__dot"></span> A smarter way to get things done</span>
+      <h1>Make room for<br />what <span>matters.</span></h1>
+      <p class="hero__description">
+        Great work starts with a little clarity. Northstar helps your team find answers, stay focused,
+        and move forward with confidence.
+      </p>
+      <div class="hero__actions" id="get-started">
+        <button class="primary-button" type="button" (click)="toggleChat()">
+          Meet your AI assistant <span aria-hidden="true">↗</span>
+        </button>
+        <a class="text-link" href="#features">Explore the platform <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="social-proof">
+        <div class="avatar-stack" aria-hidden="true"><span>A</span><span>M</span><span>J</span><span>+</span></div>
+        <p><strong>Teams are moving forward</strong><br />One thoughtful answer at a time</p>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-label="Illustration of connected ideas" role="img">
+      <div class="hero-art__glow"></div>
+      <div class="orbit orbit--outer"></div>
+      <div class="orbit orbit--inner"></div>
+      <div class="art-card art-card--top"><span class="art-card__icon art-card__icon--lavender">✳</span><span>Ideas, in focus</span><span class="art-card__dots">•••</span></div>
+      <div class="art-card art-card--bottom"><span class="art-card__icon art-card__icon--mint">↗</span><span>Onward, together</span><span class="art-card__check">✓</span></div>
+      <div class="art-center"><span>✦</span><small>FIND YOUR<br />NORTH</small></div>
+      <span class="art-spark art-spark--one">✳</span><span class="art-spark art-spark--two">✦</span>
+      <span class="art-pill">A little more clarity <span>↗</span></span>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="features__heading">
+      <span class="eyebrow">YOUR NEXT STEP, MADE SIMPLE</span>
+      <h2>Less searching. More <span>doing.</span></h2>
+      <p>Everything you need to get unstuck and keep your best work moving.</p>
+    </div>
+    <div class="feature-grid">
+      <article class="feature-card"><span class="feature-icon feature-icon--blue">⌕</span><h3>Find your answer</h3><p>Get clear, helpful answers when questions slow you down.</p></article>
+      <article class="feature-card"><span class="feature-icon feature-icon--peach">✳</span><h3>Think out loud</h3><p>Turn a rough thought into a plan you can actually use.</p></article>
+      <article class="feature-card"><span class="feature-icon feature-icon--green">↗</span><h3>Keep things moving</h3><p>Make the next step feel a little easier, every day.</p></article>
+    </div>
+  </section>
+
+  <footer class="site-footer"><a class="site-brand" href="/"><span class="site-brand__mark" aria-hidden="true">✦</span><span>northstar<span class="site-brand__accent">.</span></span></a><span>Find a little more clarity.</span><span>© 2026 Northstar</span></footer>
+
+  <section
+    class="chat-popover"
+    [class.chat-popover--open]="isChatOpen()"
+    [attr.aria-hidden]="!isChatOpen()"
+    [attr.inert]="isChatOpen() ? null : ''"
+  >
+    <header class="chat-popover__header"><div><span class="chat-popover__status"></span> Northstar assistant</div>
+      <button type="button" aria-label="Close chat" (click)="toggleChat()">×</button></header>
+    <iframe title="Northstar AI assistant" src="/chat?title=Northstar%20assistant&embed=1"></iframe>
+  </section>
+  <button
+    class="chat-launcher"
+    [class.chat-launcher--open]="isChatOpen()"
+    type="button"
+    [attr.aria-expanded]="isChatOpen()"
+    aria-label="Open AI assistant chat"
+    (click)="toggleChat()"
+  >
+    @if (isChatOpen()) {
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+    } @else {
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 8 8 0 0 1-3.5-.8L4 20l1.3-4.1A7.4 7.4 0 0 1 4 11.5 7.5 7.5 0 0 1 11.5 4h1A7.5 7.5 0 0 1 20 11.5Z" /><path d="M8 11h.01M12 11h.01M16 11h.01" /></svg>
+    }
+  </button>
+</main>
+}
