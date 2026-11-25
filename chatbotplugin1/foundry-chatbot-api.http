@@ -1,0 +1,16 @@
+@foundry_chatbot_api_HostAddress = http://localhost:3000
+@accessToken = REPLACE_WITH_ACCESS_TOKEN
+
+### Health
+GET {{foundry_chatbot_api_HostAddress}}/api/health
+Accept: application/json
+
+### Search the signed-in user's messages
+GET {{foundry_chatbot_api_HostAddress}}/api/chat/conversations?query=example
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+### List recent conversations
+GET {{foundry_chatbot_api_HostAddress}}/api/chat/conversations
+Authorization: Bearer {{accessToken}}
+Accept: application/json
